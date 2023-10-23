@@ -113,8 +113,9 @@ export function startImageUpload(file: File, view: EditorView, pos: number) {
 export const handleImageUpload = (file: File) => {
   // upload to Vercel Blob
   return new Promise((resolve) => {
+    console.log("file", file);
     toast.promise(
-      fetch("/files?namespace=images", {
+      fetch("/files?namespace=files", {
         method: "POST",
         headers: {
           "content-type": file?.type || "application/octet-stream",
@@ -123,10 +124,10 @@ export const handleImageUpload = (file: File) => {
         body: file,
       }).then(async (res) => {
         // Successfully uploaded image
-        if (res.status === 200) {
-          const { payload } = (await res.json());
-          const { namespace, filename } = payload;
-          const url = `${process.env.API_HOST}/${namespace}/${filename}`
+        if (res.status === 201) {
+          const { payload } = await res.json();
+          const { path } = payload;
+          const url = `${process.env.API_HOST}/${path}`
 
           // preload the image
           let image = new Image();
