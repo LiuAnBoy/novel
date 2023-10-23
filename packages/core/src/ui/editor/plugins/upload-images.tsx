@@ -1,4 +1,4 @@
-import { BlobResult } from "@vercel/blob";
+// import { BlobResult } from "@vercel/blob";
 import { toast } from "sonner";
 import { EditorState, Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet, EditorView } from "@tiptap/pm/view";
@@ -114,17 +114,20 @@ export const handleImageUpload = (file: File) => {
   // upload to Vercel Blob
   return new Promise((resolve) => {
     toast.promise(
-      fetch("/api/upload", {
+      fetch("/files?namespace=images", {
         method: "POST",
         headers: {
           "content-type": file?.type || "application/octet-stream",
-          "x-vercel-filename": file?.name || "image.png",
+          // "x-vercel-filename": file?.name || "image.png",
         },
         body: file,
       }).then(async (res) => {
         // Successfully uploaded image
         if (res.status === 200) {
-          const { url } = (await res.json()) as BlobResult;
+          const { payload } = (await res.json());
+          const { namespace, filename } = payload;
+          const url = `${process.env.API_HOST}/${namespace}/${filename}`
+
           // preload the image
           let image = new Image();
           image.src = url;

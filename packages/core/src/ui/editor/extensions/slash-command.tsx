@@ -18,7 +18,7 @@ import {
   Heading3,
   List,
   ListOrdered,
-  MessageSquarePlus,
+  // MessageSquarePlus,
   Text,
   TextQuote,
   Image as ImageIcon,
@@ -28,7 +28,7 @@ import {
 import { LoadingCircle } from "@/ui/icons";
 import { toast } from "sonner";
 import va from "@vercel/analytics";
-import { Magic } from "@/ui/icons";
+// import { Magic } from "@/ui/icons";
 import { getPrevText } from "@/lib/editor";
 import { startImageUpload } from "@/ui/editor/plugins/upload-images";
 import { NovelContext } from "../provider";
@@ -76,21 +76,21 @@ const Command = Extension.create({
 
 const getSuggestionItems = ({ query }: { query: string }) => {
   return [
-    {
-      title: "Continue writing",
-      description: "Use AI to expand your thoughts.",
-      searchTerms: ["gpt"],
-      icon: <Magic className="novel-w-7" />,
-    },
-    {
-      title: "Send Feedback",
-      description: "Let us know how we can improve.",
-      icon: <MessageSquarePlus size={18} />,
-      command: ({ editor, range }: CommandProps) => {
-        editor.chain().focus().deleteRange(range).run();
-        window.open("/feedback", "_blank");
-      },
-    },
+    // {
+    //   title: "Continue writing",
+    //   description: "Use AI to expand your thoughts.",
+    //   searchTerms: ["gpt"],
+    //   icon: <Magic className="novel-w-7" />,
+    // },
+    // {
+    //   title: "Send Feedback",
+    //   description: "Let us know how we can improve.",
+    //   icon: <MessageSquarePlus size={18} />,
+    //   command: ({ editor, range }: CommandProps) => {
+    //     editor.chain().focus().deleteRange(range).run();
+    //     window.open("/feedback", "_blank");
+    //   },
+    // },
     {
       title: "Text",
       description: "Just start typing with plain text.",
