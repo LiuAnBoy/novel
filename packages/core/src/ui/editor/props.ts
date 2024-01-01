@@ -44,7 +44,6 @@ export const defaultEditorProps: EditorProps = {
         left: event.clientX,
         top: event.clientY,
       });
-      console.log('upload image', file, coordinates);
       // here we deduct 1 from the pos or else the image will create an extra node
       startImageUpload(file, view, coordinates?.pos || 0 - 1);
       return true;

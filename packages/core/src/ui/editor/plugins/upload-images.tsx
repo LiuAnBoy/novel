@@ -1,9 +1,9 @@
 // import { BlobResult } from "@vercel/blob";
-import { toast } from "sonner";
-import { EditorState, Plugin, PluginKey } from "@tiptap/pm/state";
-import { Decoration, DecorationSet, EditorView } from "@tiptap/pm/view";
+import { toast } from 'sonner';
+import { EditorState, Plugin, PluginKey } from '@tiptap/pm/state';
+import { Decoration, DecorationSet, EditorView } from '@tiptap/pm/view';
 
-const uploadKey = new PluginKey("upload-image");
+const uploadKey = new PluginKey('upload-image');
 
 const UploadImagesPlugin = () =>
   new Plugin({
@@ -19,12 +19,12 @@ const UploadImagesPlugin = () =>
         if (action && action.add) {
           const { id, pos, src } = action.add;
 
-          const placeholder = document.createElement("div");
-          placeholder.setAttribute("class", "img-placeholder");
-          const image = document.createElement("img");
+          const placeholder = document.createElement('div');
+          placeholder.setAttribute('class', 'img-placeholder');
+          const image = document.createElement('img');
           image.setAttribute(
-            "class",
-            "opacity-40 rounded-lg border border-stone-200"
+            'class',
+            'opacity-40 rounded-lg border border-stone-200'
           );
           image.src = src;
           placeholder.appendChild(image);
@@ -34,7 +34,7 @@ const UploadImagesPlugin = () =>
           set = set.add(tr.doc, [deco]);
         } else if (action && action.remove) {
           set = set.remove(
-            set.find(null, null, (spec) => spec.id == action.remove.id)
+            set.find(null, null, spec => spec.id == action.remove.id)
           );
         }
         return set;
@@ -51,19 +51,19 @@ export default UploadImagesPlugin;
 
 function findPlaceholder(state: EditorState, id: {}) {
   const decos = uploadKey.getState(state);
-  const found = decos.find(null, null, (spec) => spec.id == id);
+  const found = decos.find(null, null, spec => spec.id == id);
   return found.length ? found[0].from : null;
 }
 
 export function startImageUpload(file: File, view: EditorView, pos: number) {
   // check if the file is an image
-  if (!file.type.includes("image/")) {
-    toast.error("File type not supported.");
+  if (!file.type.includes('image/')) {
+    toast.error('File type not supported.');
     return;
 
     // check if the file size is less than 20MB
   } else if (file.size / 1024 / 1024 > 20) {
-    toast.error("File size too big (max 20MB).");
+    toast.error('File size too big (max 20MB).');
     return;
   }
 
@@ -87,7 +87,7 @@ export function startImageUpload(file: File, view: EditorView, pos: number) {
     view.dispatch(tr);
   };
 
-  handleImageUpload(file).then((src) => {
+  handleImageUpload(file).then(src => {
     const { schema } = view.state;
 
     let pos = findPlaceholder(view.state, id);
@@ -100,7 +100,7 @@ export function startImageUpload(file: File, view: EditorView, pos: number) {
 
     // When BLOB_READ_WRITE_TOKEN is not valid or unavailable, read
     // the image locally
-    const imageSrc = typeof src === "object" ? reader.result : src;
+    const imageSrc = typeof src === 'object' ? reader.result : src;
 
     const node = schema.nodes.image.create({ src: imageSrc });
     const transaction = view.state.tr
@@ -111,23 +111,22 @@ export function startImageUpload(file: File, view: EditorView, pos: number) {
 }
 
 export const handleImageUpload = (file: File) => {
-  // upload to Vercel Blob
-  return new Promise((resolve) => {
-    console.log("file", file);
+  return new Promise(resolve => {
+    const formData = new FormData();
+    formData.append('file', file);
     toast.promise(
-      fetch("/files?namespace=files", {
-        method: "POST",
-        headers: {
-          "content-type": file?.type || "application/octet-stream",
-          // "x-vercel-filename": file?.name || "image.png",
-        },
-        body: file,
-      }).then(async (res) => {
+      fetch('/files?namespace=files', {
+        method: 'POST',
+        // headers: {
+        //   'content-type': 'multipart/form-data',
+        // },
+        body: formData,
+      }).then(async res => {
         // Successfully uploaded image
         if (res.status === 201) {
           const { payload } = await res.json();
-          const { path } = payload;
-          const url = `${process.env.API_HOST}/${path}`
+          const { filename } = payload;
+          const url = `/files/${filename}?namespace=files`;
 
           // preload the image
           let image = new Image();
@@ -140,7 +139,7 @@ export const handleImageUpload = (file: File) => {
           resolve(file);
 
           throw new Error(
-            "`BLOB_READ_WRITE_TOKEN` environment variable not found, reading image locally instead."
+            '`BLOB_READ_WRITE_TOKEN` environment variable not found, reading image locally instead.'
           );
           // Unknown error
         } else {
@@ -148,9 +147,9 @@ export const handleImageUpload = (file: File) => {
         }
       }),
       {
-        loading: "Uploading image...",
-        success: "Image uploaded successfully.",
-        error: (e) => e.message,
+        loading: 'Uploading image...',
+        success: 'Image uploaded successfully.',
+        error: e => e.message,
       }
     );
   });

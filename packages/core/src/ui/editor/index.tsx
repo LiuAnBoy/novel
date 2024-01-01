@@ -1,33 +1,35 @@
-"use client";
+'use client';
 
-import { useEffect, useRef, useState } from "react";
-import { useEditor, EditorContent, JSONContent } from "@tiptap/react";
-import { defaultEditorProps } from "./props";
-import { defaultExtensions } from "./extensions";
-import useLocalStorage from "@/lib/hooks/use-local-storage";
-import { useDebouncedCallback } from "use-debounce";
-import { useCompletion } from "ai/react";
-import { toast } from "sonner";
-import va from "@vercel/analytics";
-import { defaultEditorContent } from "./default-content";
-import { EditorBubbleMenu } from "./bubble-menu";
-import { getPrevText } from "@/lib/editor";
-import { ImageResizer } from "./extensions/image-resizer";
-import { EditorProps } from "@tiptap/pm/view";
-import { Editor as EditorClass, Extensions } from "@tiptap/core";
-import { NovelContext } from "./provider";
+import { useEffect, useRef, useState } from 'react';
+import { useEditor, EditorContent, JSONContent } from '@tiptap/react';
+import { defaultEditorProps } from './props';
+import { defaultExtensions } from './extensions';
+import useLocalStorage from '@/lib/hooks/use-local-storage';
+import { useDebouncedCallback } from 'use-debounce';
+import { useCompletion } from 'ai/react';
+import { toast } from 'sonner';
+import va from '@vercel/analytics';
+import { defaultEditorContent } from './default-content';
+import { EditorBubbleMenu } from './bubble-menu';
+import { getPrevText } from '@/lib/editor';
+import { ImageResizer } from './extensions/image-resizer';
+import { EditorProps } from '@tiptap/pm/view';
+import { Editor as EditorClass, Extensions } from '@tiptap/core';
+import { NovelContext } from './provider';
+import i18n from '@/lib/i18n';
 
 export default function Editor({
-  completionApi = "/api/generate",
-  className = "novel-relative novel-min-h-[500px] novel-w-full novel-max-w-screen-lg novel-border-stone-200 novel-bg-white sm:novel-mb-[calc(20vh)] sm:novel-rounded-lg sm:novel-border sm:novel-shadow-lg",
+  completionApi = '/api/generate',
+  className = 'novel-relative novel-min-h-[500px] novel-w-full novel-max-w-screen-lg novel-border-stone-200 novel-bg-white sm:novel-mb-[calc(20vh)] sm:novel-rounded-lg sm:novel-border sm:novel-shadow-lg',
   defaultValue = defaultEditorContent,
   extensions = [],
   editorProps = {},
   onUpdate = () => {},
   onDebouncedUpdate = () => {},
   debounceDuration = 750,
-  storageKey = "novel__content",
+  storageKey = 'novel__content',
   disableLocalStorage = false,
+  locales = 'zh',
 }: {
   /**
    * The API route to use for the OpenAI completion API.
@@ -81,6 +83,11 @@ export default function Editor({
    * Defaults to false.
    */
   disableLocalStorage?: boolean;
+  /**
+   * Change the language of the editor.
+   * Defaults to en.
+   */
+  locales?: string;
 }) {
   const [content, setContent] = useLocalStorage(storageKey, defaultValue);
 
@@ -101,12 +108,12 @@ export default function Editor({
       ...defaultEditorProps,
       ...editorProps,
     },
-    onUpdate: (e) => {
+    onUpdate: e => {
       const selection = e.editor.state.selection;
       const lastTwo = getPrevText(e.editor, {
         chars: 2,
       });
-      if (lastTwo === "++" && !isLoading) {
+      if (lastTwo === '++' && !isLoading) {
         e.editor.commands.deleteRange({
           from: selection.from - 2,
           to: selection.from,
@@ -117,17 +124,17 @@ export default function Editor({
           })
         );
         // complete(e.editor.storage.markdown.getMarkdown());
-        va.track("Autocomplete Shortcut Used");
+        va.track('Autocomplete Shortcut Used');
       } else {
         onUpdate(e.editor);
         debouncedUpdates(e);
       }
     },
-    autofocus: "end",
+    autofocus: 'end',
   });
 
   const { complete, completion, isLoading, stop } = useCompletion({
-    id: "novel",
+    id: 'novel',
     api: completionApi,
     onFinish: (_prompt, completion) => {
       editor?.commands.setTextSelection({
@@ -135,15 +142,15 @@ export default function Editor({
         to: editor.state.selection.from,
       });
     },
-    onError: (err) => {
+    onError: err => {
       toast.error(err.message);
-      if (err.message === "You have reached your request limit for the day.") {
-        va.track("Rate Limit Reached");
+      if (err.message === 'You have reached your request limit for the day.') {
+        va.track('Rate Limit Reached');
       }
     },
   });
 
-  const prev = useRef("");
+  const prev = useRef('');
 
   // Insert chunks of the generated text
   useEffect(() => {
@@ -156,35 +163,35 @@ export default function Editor({
     // if user presses escape or cmd + z and it's loading,
     // stop the request, delete the completion, and insert back the "++"
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape" || (e.metaKey && e.key === "z")) {
+      if (e.key === 'Escape' || (e.metaKey && e.key === 'z')) {
         stop();
-        if (e.key === "Escape") {
+        if (e.key === 'Escape') {
           editor?.commands.deleteRange({
             from: editor.state.selection.from - completion.length,
             to: editor.state.selection.from,
           });
         }
-        editor?.commands.insertContent("++");
+        editor?.commands.insertContent('++');
       }
     };
     const mousedownHandler = (e: MouseEvent) => {
       e.preventDefault();
       e.stopPropagation();
       stop();
-      if (window.confirm("AI writing paused. Continue?")) {
-        complete(editor?.getText() || "");
+      if (window.confirm('AI writing paused. Continue?')) {
+        complete(editor?.getText() || '');
       }
     };
     if (isLoading) {
-      document.addEventListener("keydown", onKeyDown);
-      window.addEventListener("mousedown", mousedownHandler);
+      document.addEventListener('keydown', onKeyDown);
+      window.addEventListener('mousedown', mousedownHandler);
     } else {
-      document.removeEventListener("keydown", onKeyDown);
-      window.removeEventListener("mousedown", mousedownHandler);
+      document.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('mousedown', mousedownHandler);
     }
     return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      window.removeEventListener("mousedown", mousedownHandler);
+      document.removeEventListener('keydown', onKeyDown);
+      window.removeEventListener('mousedown', mousedownHandler);
     };
   }, [stop, isLoading, editor, complete, completion.length]);
 
@@ -201,20 +208,24 @@ export default function Editor({
     }
   }, [editor, defaultValue, content, hydrated, disableLocalStorage]);
 
+  useEffect(() => {
+    if (locales) {
+      i18n.changeLanguage(locales);
+    }
+  }, [locales]);
+
   return (
     <NovelContext.Provider
       value={{
         completionApi,
-      }}
-    >
+      }}>
       <div
         onClick={() => {
           editor?.chain().focus().run();
         }}
-        className={className}
-      >
+        className={className}>
         {editor && <EditorBubbleMenu editor={editor} />}
-        {editor?.isActive("image") && <ImageResizer editor={editor} />}
+        {editor?.isActive('image') && <ImageResizer editor={editor} />}
         <EditorContent editor={editor} />
       </div>
     </NovelContext.Provider>

@@ -32,6 +32,7 @@ import va from "@vercel/analytics";
 import { getPrevText } from "@/lib/editor";
 import { startImageUpload } from "@/ui/editor/plugins/upload-images";
 import { NovelContext } from "../provider";
+import i18nInstance from '@/lib/i18n';
 
 interface CommandItemProps {
   title: string;
@@ -92,8 +93,8 @@ const getSuggestionItems = ({ query }: { query: string }) => {
     //   },
     // },
     {
-      title: "Text",
-      description: "Just start typing with plain text.",
+      title: i18nInstance.t("SLASH_TEXT"),
+      description: i18nInstance.t("SLASH_TEXT_DESCRIPTION"),
       searchTerms: ["p", "paragraph"],
       icon: <Text size={18} />,
       command: ({ editor, range }: CommandProps) => {
